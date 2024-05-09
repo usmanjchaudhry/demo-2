@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ProfileCreation from './ProfileCreation';
 import EmbedVideo from './EmbedVideo';
 
-//testing
 const ARRAY_OF_RECIPES = [
   { name: 'Hamburger', type: 'Fast Food', ingredients: ['Bun', 'Patty', 'Lettuce', 'Tomato'] },
   { name: 'Cookies', type: 'Dessert', ingredients: ['Flour', 'Sugar', 'Eggs', 'Chocolate Chips'] },
@@ -18,11 +17,20 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
   const [displayedItems, setDisplayedItems] = useState([]);
+  const [displayText, setDisplayText] = useState('');
+  const [showPizzaImage, setShowPizzaImage] = useState(false);
   const [selectedIngredients, setSelectedIngredients] = useState([]);
   const [selectedType, setSelectedType] = useState('');
+  const [newRecipeName, setNewRecipeName] = useState('');
+  const [newRecipeType, setNewRecipeType] = useState('');
+  const [newRecipeIngredients, setNewRecipeIngredients] = useState('');
+  const [submittedRecipes, setSubmittedRecipes] = useState([]);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+    setCurrentPage(1);
+    setDisplayText(event.target.value);
+    setShowPizzaImage(event.target.value.toLowerCase() === 'pizza');
   };
 
   const handleIngredientChange = (event) => {
@@ -33,18 +41,45 @@ function App() {
     setSelectedType(event.target.value);
   };
 
-  const allItems = ARRAY_OF_RECIPES;
-
-  const filterRecipes = () => {
-    const filteredItems = allItems.filter(recipe =>
-      recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (selectedIngredients.length === 0 || selectedIngredients.every(ingredient => recipe.ingredients.includes(ingredient))) &&
-      (selectedType === '' || recipe.type === selectedType)
-    );
-    setDisplayedItems(filteredItems);
-    setCurrentPage(1);
+  const handleRecipeNameChange = (event) => {
+    setNewRecipeName(event.target.value);
   };
 
+  const handleRecipeTypeChange = (event) => {
+    setNewRecipeType(event.target.value);
+  };
+
+  const handleRecipeIngredientsChange = (event) => {
+    setNewRecipeIngredients(event.target.value);
+  };
+
+  const handleRecipeSubmit = (event) => {
+    event.preventDefault();
+    const newRecipe = {
+      name: newRecipeName,
+      type: newRecipeType,
+      ingredients: newRecipeIngredients.split(',').map(ingredient => ingredient.trim())
+    };
+    setSubmittedRecipes([...submittedRecipes, newRecipe]);
+    setNewRecipeName('');
+    setNewRecipeType('');
+    setNewRecipeIngredients('');
+  };
+
+  const filteredRecipes = ARRAY_OF_RECIPES.filter(recipe => {
+    if (selectedIngredients.length > 0 && !selectedIngredients.every(ingredient => recipe.ingredients.includes(ingredient))) {
+      return false;
+    }
+    if (selectedType !== '' && recipe.type !== selectedType) {
+      return false;
+    }
+    if (searchTerm !== '' && !recipe.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
+
+  const allItems = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`);
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -60,7 +95,7 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <h1 style={{ textAlign: 'center', color: '#007bff' }}>Recipe Finder</h1>
+        <h1 className="title">Recipe Finder</h1>
         <div className="search-wrapper">
           <input
             type="text"
@@ -69,7 +104,10 @@ function App() {
             onChange={handleSearchChange}
             className="search-input"
           />
-          <button onClick={filterRecipes} className="search-button">Search</button>
+          {displayText && <div className="displayed-text">{displayText}</div>}
+          {showPizzaImage && (
+            <img src="https://thumbs.dreamstime.com/b/sketch-smiling-italian-chef-holding-pizza-his-hand-style-vector-illustration-white-background-charming-74048679.jpg" alt="Pizza" className="pizza-image" />
+          )}
           <Link to="/create-profile">
             <button className="profile-button">Create Profile</button>
           </Link>
@@ -87,20 +125,36 @@ function App() {
             ))}
           </select>
         </div>
+        <div className="submit-recipe">
+          <h2>Submit a Recipe</h2>
+          <form onSubmit={handleRecipeSubmit}>
+            <input type="text" placeholder="Recipe Name" value={newRecipeName} onChange={handleRecipeNameChange} />
+            <input type="text" placeholder="Recipe Type" value={newRecipeType} onChange={handleRecipeTypeChange} />
+            <textarea placeholder="Recipe Ingredients (comma-separated)" value={newRecipeIngredients} onChange={handleRecipeIngredientsChange}></textarea>
+            <button type="submit">Submit Recipe</button>
+          </form>
+        </div>
         <Routes>
           <Route path="/" element={<div>Welcome to Recipe Finder!</div>} />
           <Route path="/create-profile" element={<ProfileCreation />} />
         </Routes>
       </div>
-      <ul>
-        {displayedItems.map((recipe, index) => (
+      <EmbedVideo videoUrl="https://www.taxmann.com/emailer/images/CompaniesAct.mp4" />
 
-          <li key={index}>
+      <ul className="recipe-list">
+        {filteredRecipes.map((recipe, index) => (
+          <li key={index} className="recipe-item">
             <h3>{recipe.name}</h3>
             <p>Type: {recipe.type}</p>
             <p>Ingredients: {recipe.ingredients.join(', ')}</p>
-            {(index === 1 || index === 4) && <EmbedVideo videoUrl="https://v.ftcdn.net/02/65/91/66/700_F_265916661_vAyKtkaCC6mXN8GQBiOudI1pKueez73k_ST.mp4" />}
-
+          </li>
+        ))}
+        {submittedRecipes.map((recipe, index) => (
+          <li key={index} className="recipe-item">
+            <h3>{recipe.name}</h3>
+            <p>Type: {recipe.type}</p>
+            <p>Ingredients: {recipe.ingredients.join(', ')}</p>
+            <p>Status: Pending Approval</p>
           </li>
         ))}
       </ul>
@@ -112,49 +166,43 @@ function App() {
       <style>{`
         .App {
           font-family: Arial, sans-serif;
+          max-width: 800px;
+          margin: 0 auto;
         }
 
-        .search-wrapper, .filters {
+        .title {
+          text-align: center;
+          color: #007bff;
+        }
+
+        .search-wrapper {
           display: flex;
-          flex-direction: column;
           align-items: center;
-          margin-top: 20px;
+          justify-content: space-between;
+          margin-bottom: 20px;
         }
 
-        .search-input, .ingredient-select, .type-select {
-          width: 60%;
-          max-width: 300px;
+        .search-input {
+          width: 70%;
           padding: 10px;
-          margin: 10px;
           border: 1px solid #ccc;
           border-radius: 5px;
           font-size: 16px;
-          box-sizing: border-box;
         }
 
-        .search-button {
-          padding: 10px;
-          margin: 10px;
-          font-size: 16px;
-          background-color: #007bff;
-          color: white;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-        }
-
-        .displayed-text, .pagination span {
+        .displayed-text {
           text-align: center;
-          font-size: 24px;
+          font-size: 18px;
           color: red;
           margin: 10px 0;
         }
 
-        .pizza-image, .profile-button {
-          width: 100%;
-          max-width: 300px;
+        .pizza-image {
+          max-width: 100px;
           height: auto;
-          margin: 20px 0;
+        }
+
+        .profile-button {
           padding: 10px 20px;
           font-size: 16px;
           color: white;
@@ -163,10 +211,84 @@ function App() {
           border-radius: 5px;
           cursor: pointer;
         }
+
+        .filters {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 20px;
+        }
+
+        .ingredient-select,
+        .type-select {
+          width: 45%;
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          font-size: 16px;
+        }
+
+        .submit-recipe {
+          margin-bottom: 20px;
+        }
+
+        .submit-recipe h2 {
+          text-align: center;
+          margin-bottom: 10px;
+        }
+
+        .submit-recipe form {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .submit-recipe input,
+        .submit-recipe textarea {
+          margin-bottom: 10px;
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          font-size: 16px;
+        }
+
+        .recipe-list {
+          list-style: none;
+          padding: 0;
+        }
+
+        .recipe-item {
+          background-color: #f9f9f9;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          padding: 10px;
+          margin-bottom: 10px;
+        }
+
+        .pagination {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: 20px;
+        }
+
+        .pagination button {
+          padding: 10px 20px;
+          margin: 0 5px;
+          font-size: 16px;
+          color: white;
+          background-color: #007bff;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+
+        .pagination button:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
       `}</style>
     </Router>
   );
 }
 
 export default App;
-
