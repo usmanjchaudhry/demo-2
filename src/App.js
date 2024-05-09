@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ProfileCreation from './ProfileCreation';
 import EmbedVideo from './EmbedVideo';
 
+//testing
 const ARRAY_OF_RECIPES = [
   { name: 'Hamburger', type: 'Fast Food', ingredients: ['Bun', 'Patty', 'Lettuce', 'Tomato'] },
   { name: 'Cookies', type: 'Dessert', ingredients: ['Flour', 'Sugar', 'Eggs', 'Chocolate Chips'] },
@@ -43,6 +44,7 @@ function App() {
     setDisplayedItems(filteredItems);
     setCurrentPage(1);
   };
+
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -92,11 +94,13 @@ function App() {
       </div>
       <ul>
         {displayedItems.map((recipe, index) => (
+
           <li key={index}>
             <h3>{recipe.name}</h3>
             <p>Type: {recipe.type}</p>
             <p>Ingredients: {recipe.ingredients.join(', ')}</p>
             {(index === 1 || index === 4) && <EmbedVideo videoUrl="https://v.ftcdn.net/02/65/91/66/700_F_265916661_vAyKtkaCC6mXN8GQBiOudI1pKueez73k_ST.mp4" />}
+
           </li>
         ))}
       </ul>
