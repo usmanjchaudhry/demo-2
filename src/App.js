@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import ProfileCreation from './ProfileCreation'; // Import ProfileCreation from './ProfileCreation'
+import ProfileCreation from './ProfileCreation';
 import EmbedVideo from './EmbedVideo';
 
 const ARRAY_OF_RECIPES = [
@@ -17,16 +17,11 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
   const [displayedItems, setDisplayedItems] = useState([]);
-  const [displayText, setDisplayText] = useState('');
-  const [showPizzaImage, setShowPizzaImage] = useState(false);
   const [selectedIngredients, setSelectedIngredients] = useState([]);
   const [selectedType, setSelectedType] = useState('');
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1);
-    setDisplayText(event.target.value);
-    setShowPizzaImage(event.target.value.toLowerCase() === 'pizza');
   };
 
   const handleIngredientChange = (event) => {
@@ -37,7 +32,17 @@ function App() {
     setSelectedType(event.target.value);
   };
 
-  const allItems = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`);
+  const allItems = ARRAY_OF_RECIPES;
+
+  const filterRecipes = () => {
+    const filteredItems = allItems.filter(recipe =>
+      recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (selectedIngredients.length === 0 || selectedIngredients.every(ingredient => recipe.ingredients.includes(ingredient))) &&
+      (selectedType === '' || recipe.type === selectedType)
+    );
+    setDisplayedItems(filteredItems);
+    setCurrentPage(1);
+  };
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -62,10 +67,7 @@ function App() {
             onChange={handleSearchChange}
             className="search-input"
           />
-          {displayText && <div className="displayed-text">{displayText}</div>}
-          {showPizzaImage && (
-            <img src="https://thumbs.dreamstime.com/b/sketch-smiling-italian-chef-holding-pizza-his-hand-style-vector-illustration-white-background-charming-74048679.jpg" alt="Pizza" className="pizza-image" />
-          )}
+          <button onClick={filterRecipes} className="search-button">Search</button>
           <Link to="/create-profile">
             <button className="profile-button">Create Profile</button>
           </Link>
@@ -88,10 +90,15 @@ function App() {
           <Route path="/create-profile" element={<ProfileCreation />} />
         </Routes>
       </div>
-      <EmbedVideo videoUrl="https://www.taxmann.com/emailer/images/CompaniesAct.mp4" /> {/* Include the EmbedVideo component */}
-
       <ul>
-        {displayedItems.map((item, index) => <li key={index}>{item}</li>)}
+        {displayedItems.map((recipe, index) => (
+          <li key={index}>
+            <h3>{recipe.name}</h3>
+            <p>Type: {recipe.type}</p>
+            <p>Ingredients: {recipe.ingredients.join(', ')}</p>
+            {(index === 1 || index === 4) && <EmbedVideo videoUrl="https://v.ftcdn.net/02/65/91/66/700_F_265916661_vAyKtkaCC6mXN8GQBiOudI1pKueez73k_ST.mp4" />}
+          </li>
+        ))}
       </ul>
       <div className="pagination">
         <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>Previous</button>
@@ -111,14 +118,25 @@ function App() {
         }
 
         .search-input, .ingredient-select, .type-select {
-          width: 90%;
-          max-width: 500px;
+          width: 60%;
+          max-width: 300px;
           padding: 10px;
           margin: 10px;
           border: 1px solid #ccc;
           border-radius: 5px;
           font-size: 16px;
           box-sizing: border-box;
+        }
+
+        .search-button {
+          padding: 10px;
+          margin: 10px;
+          font-size: 16px;
+          background-color: #007bff;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
         }
 
         .displayed-text, .pagination span {
@@ -147,3 +165,4 @@ function App() {
 }
 
 export default App;
+
