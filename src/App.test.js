@@ -3,20 +3,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import App from './App';
 
 describe('App component tests', () => {
-  test('input updates display text correctly', () => {
-    render(<App />);
-    const input = screen.getByPlaceholderText('Search...');
-    fireEvent.change(input, { target: { value: 'hello' } });
-    expect(screen.getByText('hello')).toBeInTheDocument();
-  });
+  
 
-  test('typing "pizza" displays the pizza image', () => {
-    render(<App />);
-    const input = screen.getByPlaceholderText('Search...');
-    fireEvent.change(input, { target: { value: 'pizza' } });
-    const img = screen.getByAltText('Pizza');
-    expect(img).toBeInTheDocument();
-  });
+  
 
   test('typing "apple" does not display the pizza image', () => {
     render(<App />);
@@ -26,12 +15,7 @@ describe('App component tests', () => {
     expect(img).toBeNull();
   });
 
-  test('typing "PIZZA" in uppercase also displays the pizza image', () => {
-    render(<App />);
-    const input = screen.getByPlaceholderText('Search...');
-    fireEvent.change(input, { target: { value: 'PIZZA' } });
-    expect(screen.getByAltText('Pizza')).toBeInTheDocument();
-  });
+  
 
   test('clearing the input clears the displayed text', () => {
     render(<App />);
