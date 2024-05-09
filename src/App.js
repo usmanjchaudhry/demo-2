@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import ProfileCreation from './ProfileCreation'; // Import ProfileCreation from './ProfileCreation'
+import ProfileCreation from './ProfileCreation';
 import EmbedVideo from './EmbedVideo';
 
 const ARRAY_OF_RECIPES = [
@@ -36,6 +36,19 @@ function App() {
   const handleTypeChange = (event) => {
     setSelectedType(event.target.value);
   };
+
+  const filteredRecipes = ARRAY_OF_RECIPES.filter(recipe => {
+    if (selectedIngredients.length > 0 && !selectedIngredients.every(ingredient => recipe.ingredients.includes(ingredient))) {
+      return false;
+    }
+    if (selectedType !== '' && recipe.type !== selectedType) {
+      return false;
+    }
+    if (searchTerm !== '' && !recipe.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
 
   const allItems = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`);
 
@@ -88,10 +101,16 @@ function App() {
           <Route path="/create-profile" element={<ProfileCreation />} />
         </Routes>
       </div>
-      <EmbedVideo videoUrl="https://www.taxmann.com/emailer/images/CompaniesAct.mp4" /> {/* Include the EmbedVideo component */}
+      <EmbedVideo videoUrl="https://www.taxmann.com/emailer/images/CompaniesAct.mp4" />
 
       <ul>
-        {displayedItems.map((item, index) => <li key={index}>{item}</li>)}
+        {filteredRecipes.map((recipe, index) => (
+          <li key={index}>
+            <h3>{recipe.name}</h3>
+            <p>Type: {recipe.type}</p>
+            <p>Ingredients: {recipe.ingredients.join(', ')}</p>
+          </li>
+        ))}
       </ul>
       <div className="pagination">
         <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>Previous</button>
